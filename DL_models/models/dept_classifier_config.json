@@ -1,0 +1,12 @@
+{
+  "departments": [
+    "Electricity",
+    "Road",
+    "Water"
+  ],
+  "img_size": [
+    128,
+    128
+  ],
+  "model_path": "models/dept_classifier.h5"
+}

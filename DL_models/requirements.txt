@@ -1,0 +1,22 @@
+# Core ML & DL
+tensorflow==2.15.0
+numpy
+pandas
+
+# Image processing
+pillow
+opencv-python
+
+# NLP
+scikit-learn
+
+# GPT-2 Text Analyzer
+torch
+transformers
+
+# FastAPI backend for ML
+fastapi
+uvicorn
+
+# Utilities
+python-multipart

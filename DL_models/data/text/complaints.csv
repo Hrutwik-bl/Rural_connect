@@ -1,0 +1,103 @@
+description,department,severity,label
+Large potholes on main village road causing accidents,Road,High,0
+Broken road near government school,Road,High,0
+Cracks on road after heavy rainfall,Road,Medium,0
+Uneven road surface near market area,Road,Medium,0
+Small potholes on internal village road,Road,Low,0
+Damaged speed breaker near junction,Road,Low,0
+Roadside drainage overflowing onto road,Road,High,0
+Collapsed road shoulder after rain,Road,High,0
+Newly laid road developing cracks,Road,Low,0
+Road damaged due to water stagnation,Road,Medium,0
+Mud road becomes slippery during rain,Road,Medium,0
+Village road blocked by fallen tree,Road,High,0
+Poor road surface causing vehicle damage,Road,Medium,0
+Road widening incomplete causing traffic,Road,Low,0
+Deep pothole near bus stop,Road,High,0
+Broken culvert damaging road,Road,High,0
+Road sinking near drainage line,Road,High,0
+Loose gravel on road surface,Road,Low,0
+Cracked road near hospital,Road,Medium,0
+Sharp turns damaged on village road,Road,Medium,0
+Road damaged by heavy vehicle movement,Road,Medium,0
+Footpath broken along roadside,Road,Low,0
+Road edge collapsing near canal,Road,High,0
+Unpaved road causing dust problems,Road,Low,0
+Main road flooded during rain,Road,High,0
+Bridge road cracked badly,Road,High,0
+Road markings faded completely,Road,Low,0
+Village road narrowed due to erosion,Road,Medium,0
+Dangerous curve without warning sign,Road,Medium,0
+Road hump damaged,Road,Low,0
+Potholes forming after recent repair,Road,Medium,0
+Road subsiding near electric pole,Road,High,0
+Road surface peeling off,Road,Medium,0
+Damaged road causing traffic jams,Road,Medium,0
+
+No water supply for three days,Water,High,2
+Water pipeline leakage near house,Water,Medium,2
+Very low water pressure in taps,Water,Medium,2
+Dirty water coming from taps,Water,High,2
+Water overflow from overhead tank,Water,Low,2
+Broken drainage line causing smell,Water,High,2
+Tap water not coming regularly,Water,Medium,2
+Small water leakage on roadside,Water,Low,2
+Water tanker not supplied on time,Water,Medium,2
+No drinking water in summer season,Water,High,2
+Drainage water mixing with drinking water,Water,High,2
+Water motor not working in tank,Water,Medium,2
+Pipe burst causing water wastage,Water,High,2
+Water supply timing irregular,Water,Low,2
+Water collected on street from leakage,Water,Medium,2
+Blocked drainage causing overflow,Water,High,2
+Broken water valve near road,Water,Low,2
+Low quality muddy water supplied,Water,High,2
+Water shortage in upper area,Water,Medium,2
+Open drainage water stagnation,Water,High,2
+Water tank cleaning not done,Water,Low,2
+Water supply stopped at night,Water,Medium,2
+Overflowing drainage near houses,Water,High,2
+Leakage from main pipeline,Water,High,2
+Drainage blockage near market,Water,Medium,2
+Irregular water supply timings,Water,Low,2
+Water contamination suspected,Water,High,2
+Broken hand pump in village,Water,Medium,2
+Drainage smell spreading,Road,High,2
+Water pressure very low in taps,Water,Medium,2
+Water logging near borewell,Water,Medium,2
+Water line damaged during road work,Water,High,2
+Water valve missing,Road,Low,2
+
+Electric pole sparking during rain,Electricity,High,1
+Transformer making loud noise,Electricity,Medium,1
+Street light not working,Electricity,Low,1
+Power cut every night in village,Electricity,High,1
+Loose electric wires hanging,Electricity,High,1
+Voltage fluctuation damaging appliances,Electricity,Medium,1
+Electric meter not working properly,Electricity,Low,1
+Broken electric pole near house,Electricity,High,1
+Street light flickering continuously,Electricity,Medium,1
+No electricity supply for two days,Electricity,High,1
+Transformer oil leakage observed,Electricity,High,1
+Electric shock from street pole,Electricity,High,1
+Frequent power interruption,Electricity,Medium,1
+Electric wires touching trees,Electricity,Medium,1
+Street lights not glowing at night,Electricity,Low,1
+Power supply unstable in village,Electricity,Medium,1
+Electric box damaged near road,Electricity,High,1
+Electric pole tilted dangerously,Electricity,High,1
+Fuse blowing repeatedly,Electricity,Medium,1
+Electric line fallen on road,Electricity,High,1
+High voltage damaging bulbs,Electricity,Medium,1
+Transformer breakdown reported,Electricity,High,1
+Electric panel left open,Electricity,Low,1
+Power outage during rainfall,Electricity,Medium,1
+Electric junction box sparking,Electricity,High,1
+Street light pole rusted,Electricity,Low,1
+Power fluctuation at night,Electricity,Medium,1
+Electric wires exposed near school,Electricity,High,1
+Electric pole cracked at base,Electricity,High,1
+No backup power for water pump,Electricity,Medium,1
+Electric transformer overheating,Electricity,High,1
+Loose power connection near shop,Electricity,Medium,1
+Electric fuse damaged repeatedly,Electricity,Medium,1

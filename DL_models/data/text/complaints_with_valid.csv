@@ -1,0 +1,46 @@
+description,image_path,department,severity,label,is_valid
+"Drainage system is blocked, causing water stagnation",water/water_11.jpg,Water,High,water,1
+Water supply is contaminated with dirt and sediment,road/road_12.jpg,Water,High,water,0
+Electrical wire creating safety hazard,water/water_3.jpg,Electricity,Critical,electricity,0
+Water tank overflow creating flooding in the area,water/water_16.jpg,Water,High,water,1
+"Pipe burst in our village, water is overflowing",road/road_10.jpg,Water,Critical,water,0
+Broken road near government school needs repair,road/road_10.jpg,Road,High,road,1
+There is water leakage from the pipe near my house,water/water_1.jpg,Water,Medium,water,1
+Street lighting on damaged road is not working,road/road_13.jpg,Road,High,road,1
+Sewage water is mixing with drinking water supply,water/water_15.jpg,Water,Critical,water,1
+Power cut happening frequently in village,electricity/electric_13.jpg,Electricity,High,electricity,1
+Dangerous pothole near bus stop,electricity/electric_15.jpg,Road,High,road,0
+Broken water tap causing wastage in the village,road/road_13.jpg,Water,Medium,water,0
+Large potholes on main village road causing accidents,road/road_1.jpg,Road,Critical,road,1
+There is water leakage from the pipe near my house,road/road_1.jpg,Water,Medium,water,0
+Electricity pole is damaged and leaning dangerously,electricity/electric_1.jpg,Electricity,Critical,electricity,1
+"Pipe burst in our village, water is overflowing",water/water_10.jpg,Water,Critical,water,1
+Road needs immediate repair and patching,road/road_16.jpg,Road,High,road,1
+Street lighting on damaged road is not working,electricity/electric_13.jpg,Road,High,road,0
+Water pipeline needs urgent repair,water/water_14.jpg,Water,High,water,1
+Electricity transformer needs repair,electricity/electric_11.jpg,Electricity,High,electricity,1
+Cracks on road after heavy rainfall,electricity/electric_11.jpg,Road,Medium,road,0
+Broken road near government school needs repair,electricity/electric_10.jpg,Road,High,road,0
+Electrical wire creating safety hazard,electricity/electric_14.jpg,Electricity,Critical,electricity,1
+Electricity pole is damaged and leaning dangerously,water/water_17.jpg,Electricity,Critical,electricity,0
+High voltage wire hanging low near school,water/water_4.jpg,Electricity,Critical,electricity,0
+High voltage wire hanging low near school,electricity/electric_15.jpg,Electricity,Critical,electricity,1
+Dangerous pothole near bus stop,road/road_15.jpg,Road,High,road,1
+Road damage causing traffic congestion,electricity/electric_14.jpg,Road,Medium,road,0
+Uneven road surface near market area,road/road_12.jpg,Road,Medium,road,1
+Power wire is broken and hanging near road,water/water_18.jpg,Electricity,Critical,electricity,0
+Electricity supply is unstable causing flickering,electricity/electric_16.jpg,Electricity,Medium,electricity,1
+Electricity transformer needs repair,water/water_19.jpg,Electricity,High,electricity,0
+Water supply is contaminated with dirt and sediment,water/water_12.jpg,Water,High,water,1
+Power cut happening frequently in village,water/water_20.jpg,Electricity,Medium,electricity,0
+Large potholes on main village road causing accidents,electricity/electric_1.jpg,Road,Critical,road,0
+Broken water tap causing wastage in the village,water/water_13.jpg,Water,Medium,water,1
+Road damage causing traffic congestion,road/road_14.jpg,Road,Medium,road,1
+Water pipeline needs urgent repair,road/road_14.jpg,Water,High,water,0
+"Drainage system is blocked, causing water stagnation",road/road_11.jpg,Water,High,water,0
+Street light is not working for weeks,water/water_2.jpg,Electricity,High,electricity,0
+Power wire is broken and hanging near road,electricity/electric_10.jpg,Electricity,Critical,electricity,1
+Uneven road surface near market area,electricity/electric_12.jpg,Road,Medium,road,0
+Street light is not working for weeks,electricity/electric_12.jpg,Electricity,High,electricity,1
+Cracks on road after heavy rainfall,road/road_11.jpg,Road,Medium,road,1
+Sewage water is mixing with drinking water supply,road/road_15.jpg,Water,Critical,water,0

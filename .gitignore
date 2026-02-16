@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build outputs
+dist/
+build/
+
+# Python virtual environments
+venv/
+.venv/
+
+# Large model files
+DL_models/models/*.h5
+DL_models/models/*.safetensors
+DL_models/models/gpt2_department/
+DL_models/models/gpt2_sentiment/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Package locks (optional - remove if you want to track them)
+package-lock.json

@@ -1,0 +1,205 @@
+description,department,severity,is_augmented
+"Drainage system is blocked, causing water stagnation",Water,High,0
+"drainage system is blocked, causing tap water stagnation",Water,High,1
+"Urgent: drainage system is blocked, causing water stagnation",Water,High,1
+"Urgent: drainage system is blocked, causing water supply stagnation",Water,High,1
+Water supply is contaminated with dirt and sediment,Water,Low,0
+Urgent: water supply is contaminated with dirt and sediment,Water,Low,1
+Urgent: drinking water supply is contaminated with dirt and sediment,Water,Low,1
+water supply is contaminated with dirt and sediment,Water,Low,1
+Electrical wire creating safety hazard,Electricity,Low,0
+poweral cable creating safety hazard,Electricity,Low,1
+poweral power line creating safety hazard,Electricity,Low,1
+electricalal electric line creating safety hazard,Electricity,Low,1
+electricalal wire creating safety hazard,Electricity,Low,1
+Water tank overflow creating flooding in the area,Water,Low,0
+Urgent: water tank overflow creating flooding in the area,Water,Low,1
+Urgent: tap water tank overflow creating flooding in the area,Water,Low,1
+tap water tank overflow creating flooding in the area,Water,Low,1
+"Pipe burst in our village, water is overflowing",Water,Low,0
+"pipe line burst in our village, tap water is overflowing",Water,Low,1
+"water line burst in our village, water is overflowing",Water,Low,1
+"main burst in our village, water is overflowing",Water,Low,1
+"pipeline burst in our village, water supply is overflowing",Water,Low,1
+Broken road near government school needs repair,Road,Critical,0
+Urgent: ruptured road around government school require immediates maintenance,Road,Critical,1
+broken asphalt near government school urgents repair,Road,Critical,1
+ruptured pavement by government school require immediates fix,Road,Critical,1
+broken road at government school urgents maintenance,Road,Critical,1
+There is water leakage from the pipe near my house,Water,Low,0
+there is drinking water leakingage from the pipe near my house,Water,Low,1
+Urgent: there is tap water seepingage from the water line near my house,Water,Low,1
+Urgent: there is water drippingage from the water line at my house,Water,Low,1
+there is drinking water seepingage from the pipe near my house,Water,Low,1
+Street lighting on damaged road is not working,Road,High,0
+street lighting on damaged pavement is not working,Road,High,1
+street lighting on damaged asphalt is not working,Road,High,1
+street lighting on damaged highway is not working,Road,High,1
+Urgent: street lighting on damaged street is not working,Road,High,1
+Sewage water is mixing with drinking water supply,Water,Low,0
+Urgent: sewage water supply is mixing with drinking water supply supply,Water,Low,1
+Urgent: sewage tap water is mixing with drinking tap water supply,Water,Low,1
+Urgent: sewage drinking water is mixing with drinking drinking water supply,Water,Low,1
+sewage drinking water is mixing with drinking drinking water supply,Water,Low,1
+Power cut happening frequently in village,Electricity,High,0
+Urgent: power cut happening frequently in village,Electricity,High,1
+Dangerous pothole near bus stop,Road,Low,0
+dangerous hole near bus stop,Road,Low,1
+dangerous pit near bus stop,Road,Low,1
+dangerous pit close to bus stop,Road,Low,1
+Urgent: dangerous crater close to bus stop,Road,Low,1
+Broken water tap causing wastage in the village,Water,Medium,0
+Urgent: ruptured water supply tap causing wastage in the village,Water,Medium,1
+Urgent: broken water tap causing wastage in the village,Water,Medium,1
+Urgent: broken drinking water tap causing wastage in the village,Water,Medium,1
+Urgent: damaged tap water tap causing wastage in the village,Water,Medium,1
+Large potholes on main village road causing accidents,Road,Medium,0
+Urgent: large depressions on main village road causing accidents,Road,Medium,1
+large pits on main village pavement causing accidents,Road,Medium,1
+large craters on main village highway causing accidents,Road,Medium,1
+There is water leakage from the pipe near my house,Water,Critical,0
+there is water leakage from the pipe line close to my house,Water,Critical,1
+there is water seepingage from the water line near my house,Water,Critical,1
+Urgent: there is drinking water seepingage from the pipeline at my house,Water,Critical,1
+there is water supply leakage from the pipe line close to my house,Water,Critical,1
+Electricity pole is damaged and leaning dangerously,Electricity,Critical,0
+electricity pole is damaged and leaning dangerously,Electricity,Critical,1
+Urgent: powerity electric pole is damaged and leaning dangerously,Electricity,Critical,1
+electricality pole is damaged and leaning dangerously,Electricity,Critical,1
+electricityity post is damaged and leaning dangerously,Electricity,Critical,1
+"Pipe burst in our village, water is overflowing",Water,Low,0
+"Urgent: main burst in our village, tap water is overflowing",Water,Low,1
+"pipe burst in our village, water supply is overflowing",Water,Low,1
+"water line burst in our village, water is overflowing",Water,Low,1
+"pipeline burst in our village, tap water is overflowing",Water,Low,1
+Road needs immediate repair and patching,Road,Critical,0
+Urgent: pavement requires immediate repair and patching,Road,Critical,1
+highway needs immediate fix and patching,Road,Critical,1
+Urgent: road needs immediate maintenance and patching,Road,Critical,1
+pavement needs immediate repair and patching,Road,Critical,1
+Street lighting on damaged road is not working,Road,High,0
+street lighting on damaged road is not working,Road,High,1
+street lighting on damaged asphalt is not working,Road,High,1
+Urgent: street lighting on damaged road is not working,Road,High,1
+Urgent: street lighting on damaged highway is not working,Road,High,1
+Water pipeline needs urgent repair,Water,Medium,0
+Urgent: water supply pipelineline require immediates urgent repair,Water,Medium,1
+Urgent: water water lineline require immediates urgent maintenance,Water,Medium,1
+Urgent: water supply water lineline requires urgent repair,Water,Medium,1
+water pipe lineline require immediates urgent maintenance,Water,Medium,1
+Electricity transformer needs repair,Electricity,High,0
+electricality transformer urgents repair,Electricity,High,1
+powerity transformer require immediates maintenance,Electricity,High,1
+electricity transformer urgents repair,Electricity,High,1
+powerity transformer require immediates repair,Electricity,High,1
+Cracks on road after heavy rainfall,Road,Medium,0
+Urgent: splits on street after heavy rainfall,Road,Medium,1
+Urgent: cracks on pavement after heavy rainfall,Road,Medium,1
+crevices on pavement after heavy rainfall,Road,Medium,1
+fractures on street after heavy rainfall,Road,Medium,1
+Broken road near government school needs repair,Road,High,0
+Urgent: damaged road around government school needs fix,Road,High,1
+ruptured highway around government school needs fix,Road,High,1
+Urgent: damaged road around government school urgents fix,Road,High,1
+Urgent: damaged street near government school require immediates restoration,Road,High,1
+Electrical wire creating safety hazard,Electricity,Low,0
+Urgent: electricalal power line creating safety hazard,Electricity,Low,1
+Urgent: electricityal power line creating safety hazard,Electricity,Low,1
+electricalal power line creating safety hazard,Electricity,Low,1
+poweral cable creating safety hazard,Electricity,Low,1
+Electricity pole is damaged and leaning dangerously,Electricity,Critical,0
+Urgent: powerity power pole is damaged and leaning dangerously,Electricity,Critical,1
+Urgent: electricityity electric pole is damaged and leaning dangerously,Electricity,Critical,1
+Urgent: powerity post is damaged and leaning dangerously,Electricity,Critical,1
+High voltage wire hanging low near school,Electricity,Low,0
+high voltage wire hanging low close to school,Electricity,Low,1
+high voltage cable hanging low at school,Electricity,Low,1
+high voltage wire hanging low by school,Electricity,Low,1
+Urgent: high voltage electric line hanging low at school,Electricity,Low,1
+High voltage wire hanging low near school,Electricity,Critical,0
+high voltage power line hanging low at school,Electricity,Critical,1
+high voltage electric line hanging low at school,Electricity,Critical,1
+Urgent: high voltage electric line hanging low by school,Electricity,Critical,1
+Urgent: high voltage power line hanging low by school,Electricity,Critical,1
+Dangerous pothole near bus stop,Road,Medium,0
+dangerous pit around bus stop,Road,Medium,1
+dangerous pothole at bus stop,Road,Medium,1
+dangerous depression around bus stop,Road,Medium,1
+dangerous cavity at bus stop,Road,Medium,1
+Road damage causing traffic congestion,Road,Low,0
+road damage causing traffic congestion,Road,Low,1
+street damage causing traffic congestion,Road,Low,1
+asphalt damage causing traffic congestion,Road,Low,1
+Uneven road surface near market area,Road,Critical,0
+Urgent: uneven road surface at market area,Road,Critical,1
+uneven pavement surface by market area,Road,Critical,1
+uneven road surface around market area,Road,Critical,1
+Urgent: uneven highway surface by market area,Road,Critical,1
+Power wire is broken and hanging near road,Electricity,Low,0
+Urgent: power electric line is burst and hanging near asphalt,Electricity,Low,1
+Urgent: power wire is broken and hanging by street,Electricity,Low,1
+Urgent: power cable is broken and hanging at pavement,Electricity,Low,1
+Urgent: power electric line is burst and hanging at asphalt,Electricity,Low,1
+Electricity supply is unstable causing flickering,Electricity,Low,0
+Urgent: electricality supply is unstable causing flickering,Electricity,Low,1
+Urgent: powerity supply is unstable causing flickering,Electricity,Low,1
+electricityity supply is unstable causing flickering,Electricity,Low,1
+Urgent: electricityity supply is unstable causing flickering,Electricity,Low,1
+Electricity transformer needs repair,Electricity,High,0
+electricityity transformer needs maintenance,Electricity,High,1
+electricity transformer urgents maintenance,Electricity,High,1
+powerity transformer requires repair,Electricity,High,1
+powerity transformer urgents maintenance,Electricity,High,1
+Water supply is contaminated with dirt and sediment,Water,Medium,0
+Urgent: drinking water supply is contaminated with dirt and sediment,Water,Medium,1
+water supply supply is contaminated with dirt and sediment,Water,Medium,1
+tap water supply is contaminated with dirt and sediment,Water,Medium,1
+Power cut happening frequently in village,Electricity,Medium,0
+Urgent: power cut happening frequently in village,Electricity,Medium,1
+power cut happening frequently in village,Electricity,Medium,1
+Large potholes on main village road causing accidents,Road,High,0
+large holes on main village highway causing accidents,Road,High,1
+large pits on main village pavement causing accidents,Road,High,1
+Urgent: large pits on main village road causing accidents,Road,High,1
+large craters on main village asphalt causing accidents,Road,High,1
+Broken water tap causing wastage in the village,Water,Medium,0
+fractured water tap causing wastage in the village,Water,Medium,1
+damaged water tap causing wastage in the village,Water,Medium,1
+broken water tap causing wastage in the village,Water,Medium,1
+Road damage causing traffic congestion,Road,Low,0
+highway damage causing traffic congestion,Road,Low,1
+pavement damage causing traffic congestion,Road,Low,1
+Water pipeline needs urgent repair,Water,Medium,0
+tap water pipeline require immediates urgent restoration,Water,Medium,1
+Urgent: water water lineline needs urgent maintenance,Water,Medium,1
+drinking water pipelineline urgents urgent maintenance,Water,Medium,1
+water mainline requires urgent repair,Water,Medium,1
+"Drainage system is blocked, causing water stagnation",Water,Low,0
+"drainage system is blocked, causing drinking water stagnation",Water,Low,1
+"Urgent: drainage system is blocked, causing tap water stagnation",Water,Low,1
+"drainage system is blocked, causing water supply stagnation",Water,Low,1
+Street light is not working for weeks,Electricity,High,0
+street light is not working for weeks,Electricity,High,1
+Urgent: street light is not working for weeks,Electricity,High,1
+Power wire is broken and hanging near road,Electricity,Low,0
+power line is broken and hanging near street,Electricity,Low,1
+Urgent: power electric line is fractured and hanging close to highway,Electricity,Low,1
+power electric line is broken and hanging at highway,Electricity,Low,1
+power cable is damaged and hanging near asphalt,Electricity,Low,1
+Uneven road surface near market area,Road,Medium,0
+uneven road surface close to market area,Road,Medium,1
+uneven pavement surface by market area,Road,Medium,1
+Urgent: uneven road surface close to market area,Road,Medium,1
+Urgent: uneven pavement surface near market area,Road,Medium,1
+Street light is not working for weeks,Electricity,High,0
+street light is not working for weeks,Electricity,High,1
+Urgent: street light is not working for weeks,Electricity,High,1
+Cracks on road after heavy rainfall,Road,Medium,0
+Urgent: splits on pavement after heavy rainfall,Road,Medium,1
+crevices on road after heavy rainfall,Road,Medium,1
+fractures on highway after heavy rainfall,Road,Medium,1
+splits on pavement after heavy rainfall,Road,Medium,1
+Sewage water is mixing with drinking water supply,Water,Low,0
+Urgent: sewage water is mixing with drinking water supply,Water,Low,1
+sewage drinking water is mixing with drinking drinking water supply,Water,Low,1
+Urgent: sewage tap water is mixing with drinking tap water supply,Water,Low,1
