@@ -300,16 +300,20 @@ def analyze_text(data: TextAnalyzeRequest):
 # =====================================================
 # FUZZY KEYWORD MATCHING (typo tolerance)
 # =====================================================
-def fuzzy_match(word, keyword, max_distance=2):
+def fuzzy_match(word, keyword, max_distance=None):
     """Check if word is a close match to keyword (handles typos like patholes→potholes)"""
+    # Substring match only for plurals/conjugations (length diff ≤ 3)
+    # e.g. pothole→potholes OK, crack→electrocution NOT OK
     if keyword in word or word in keyword:
-        return True
+        if abs(len(word) - len(keyword)) <= 3:
+            return True
+    # For short words (≤5 chars), only allow 1 char difference
+    if max_distance is None:
+        max_distance = 1 if max(len(word), len(keyword)) <= 5 else 2
     if abs(len(word) - len(keyword)) > max_distance:
         return False
-    # Simple edit distance check for short words
-    if len(word) < 3 or len(keyword) < 3:
+    if len(word) < 4 or len(keyword) < 4:
         return False
-    # Check if most characters overlap (allows 1-2 char typos)
     common = sum(1 for a, b in zip(word, keyword) if a == b)
     return common >= max(len(word), len(keyword)) - max_distance
 
@@ -323,6 +327,11 @@ def text_contains_keyword(text_lower, keyword):
             if fuzzy_match(word, keyword):
                 return True
     return False
+
+def text_contains_exact(text_lower, keyword):
+    """Check if text contains keyword as exact substring (no fuzzy matching).
+    Used for severity keywords where false positives are dangerous."""
+    return keyword in text_lower
 
 # =====================================================
 # KEYWORD-BASED FALLBACK PREDICTION
@@ -420,31 +429,56 @@ def _predict_severity_from_text(text_lower, department=None):
         "continuous", "constantly", "persistent"
     ]
     
+    # --- Inherently Medium: any infrastructure issue mentioned = at least Medium ---
+    inherently_medium = [
+        "pothole", "potholes", "patholes", "crack", "cracks", "cracked",
+        "leak", "leaking", "leakage", "damage", "damaged",
+        "broken", "burst", "flooding", "flooded", "overflow",
+        "no supply", "no water", "no electricity", "no power",
+        "fallen", "hanging", "blocked", "clogged", "dirty",
+        "contaminated", "stagnant", "disrupted", "outage",
+        "blackout", "sparking", "flickering", "low pressure",
+        "bumpy", "uneven", "rough", "muddy", "waterlogged"
+    ]
+
     # Score calculation
     base_severity = "Low"
     severity_score = 0  # 0=Low, 1=Medium, 2=High, 3=Critical
     
-    # Check inherent severity of issue type (with fuzzy matching)
+    # Use EXACT matching for severity keywords to avoid false positives
+    # (fuzzy matching causes "road"→"dead", "pipe"→"life" false matches)
+    
+    # Check inherent severity of issue type (with fuzzy matching for typo tolerance)
     for kw in inherently_critical:
         if text_contains_keyword(text_lower, kw):
             severity_score = max(severity_score, 3)
+            print(f"  [Severity] Critical issue: '{kw}'")
             break
     for kw in inherently_high:
         if text_contains_keyword(text_lower, kw):
             severity_score = max(severity_score, 2)
+            print(f"  [Severity] High-severity issue: '{kw}'")
             break
     
-    # Check explicit severity keywords
-    if any(text_contains_keyword(text_lower, kw) for kw in critical_keywords):
+    # Minimum floor: any infrastructure problem = at least Medium
+    if severity_score < 1:
+        for kw in inherently_medium:
+            if text_contains_keyword(text_lower, kw):
+                severity_score = max(severity_score, 1)
+                print(f"  [Severity] Infrastructure issue detected: '{kw}' → minimum Medium")
+                break
+    
+    # Check explicit severity keywords (EXACT match only - no fuzzy)
+    if any(text_contains_exact(text_lower, kw) for kw in critical_keywords):
         severity_score = max(severity_score, 3)
-    elif any(text_contains_keyword(text_lower, kw) for kw in high_keywords):
+    elif any(text_contains_exact(text_lower, kw) for kw in high_keywords):
         severity_score = max(severity_score, 2)
-    elif any(text_contains_keyword(text_lower, kw) for kw in medium_keywords):
+    elif any(text_contains_exact(text_lower, kw) for kw in medium_keywords):
         severity_score = max(severity_score, 1)
     
-    # Boost severity if quantity/intensity words are present
-    has_quantity = any(text_contains_keyword(text_lower, kw) for kw in quantity_words)
-    has_duration = any(text_contains_keyword(text_lower, kw) for kw in duration_words)
+    # Boost severity if quantity/intensity words are present (exact match)
+    has_quantity = any(text_contains_exact(text_lower, kw) for kw in quantity_words)
+    has_duration = any(text_contains_exact(text_lower, kw) for kw in duration_words)
     
     if has_quantity:
         severity_score = min(severity_score + 1, 3)  # Boost by 1 level
@@ -469,10 +503,10 @@ clip_severity_features = None
 
 SEVERITY_LABELS = ["Low", "Medium", "High", "Critical"]
 SEVERITY_DESCRIPTIONS = [
-    "a photo showing minor wear with no visible damage or safety concern",
-    "a photo showing moderate damage or deterioration needing repair",
-    "a photo showing severe damage with large potholes, major cracks, heavy flooding, or broken infrastructure",
-    "a photo showing critical dangerous conditions, collapsed structures, exposed wires, or life-threatening hazards"
+    "a clean well maintained road or infrastructure in good condition with no damage",
+    "a photo showing moderate damage such as small cracks, minor leaks, or slight wear needing repair",
+    "a photo showing significant damage such as potholes, broken pipes, flooding, fallen poles, or major infrastructure problems",
+    "a photo showing critical emergency conditions like collapsed structures, exposed electrical wires, large sinkholes, or life-threatening hazards"
 ]
 
 try:
@@ -507,10 +541,110 @@ def clip_classify_severity(pil_image):
         return None, 0.0, {}
 
 
+# =====================================================
+# CLIP IMAGE RELEVANCE CHECK (reject selfies, random photos)
+# =====================================================
+CLIP_RELEVANCE_AVAILABLE = False
+clip_relevance_features = None
+
+RELEVANCE_LABELS = ["infrastructure_issue", "irrelevant_image"]
+RELEVANCE_DESCRIPTIONS = [
+    # Infrastructure / complaint-relevant images
+    "a photo of damaged road infrastructure with potholes cracks or broken pavement",
+    "a photo of water leakage burst pipe flooding drainage or sewage problem",
+    "a photo of electrical infrastructure showing damaged wires poles transformers or power lines",
+    "a photo of broken damaged or deteriorated public infrastructure in a rural area",
+    "a photo of a construction site or road repair work in progress",
+]
+IRRELEVANCE_DESCRIPTIONS = [
+    # Irrelevant / non-complaint images
+    "a selfie photo of a person face or portrait",
+    "a photo of people posing for the camera",
+    "a photo of food meal or drinks on a table",
+    "a photo of a pet animal cat or dog indoors",
+    "a photo of a person taking a mirror selfie",
+    "a close up photo of a human face or body",
+    "a photo of people at a party celebration or event",
+    "a screenshot of a phone or computer screen",
+    "a photo of a person indoors at home or office",
+    "a landscape nature or scenery photo with no infrastructure damage",
+]
+
+try:
+    if CLIP_AVAILABLE:
+        all_relevance_descs = RELEVANCE_DESCRIPTIONS + IRRELEVANCE_DESCRIPTIONS
+        clip_rel_tokenizer = open_clip.get_tokenizer('ViT-B-32')
+        rel_tokens = clip_rel_tokenizer(all_relevance_descs)
+        with torch.no_grad():
+            clip_relevance_features = clip_model.encode_text(rel_tokens)
+            clip_relevance_features /= clip_relevance_features.norm(dim=-1, keepdim=True)
+        CLIP_RELEVANCE_AVAILABLE = True
+        print("\u2705 CLIP image relevance classifier ready (detects selfies/irrelevant images)")
+except Exception as e:
+    print(f"\u26a0 Could not set up CLIP relevance: {e}")
+
+
+def clip_check_image_relevance(pil_image, threshold=0.55):
+    """
+    Check if an image is relevant (shows infrastructure/complaint issue)
+    vs irrelevant (selfie, person, food, random photo).
+    
+    Returns:
+        is_relevant (bool): True if image appears to show infrastructure issue
+        relevance_score (float): 0-1 score, higher = more relevant
+        details (dict): Breakdown of scores
+    """
+    if not CLIP_RELEVANCE_AVAILABLE:
+        return True, 1.0, {"message": "Relevance check not available"}
+    
+    try:
+        img_tensor = clip_preprocess(pil_image).unsqueeze(0)
+        with torch.no_grad():
+            image_features = clip_model.encode_image(img_tensor)
+            image_features /= image_features.norm(dim=-1, keepdim=True)
+            similarity = (100.0 * image_features @ clip_relevance_features.T).softmax(dim=-1)
+        
+        probs = similarity[0].numpy()
+        
+        # Sum up infrastructure scores vs irrelevant scores
+        n_infra = len(RELEVANCE_DESCRIPTIONS)
+        n_irrel = len(IRRELEVANCE_DESCRIPTIONS)
+        
+        infra_score = float(probs[:n_infra].sum())
+        irrel_score = float(probs[n_infra:].sum())
+        
+        # Get top matching description for debugging
+        all_descs = RELEVANCE_DESCRIPTIONS + IRRELEVANCE_DESCRIPTIONS
+        top_idx = int(probs.argmax())
+        top_desc = all_descs[top_idx]
+        top_conf = float(probs[top_idx])
+        is_top_infra = top_idx < n_infra
+        
+        is_relevant = infra_score >= threshold
+        
+        details = {
+            "infrastructure_score": round(infra_score, 3),
+            "irrelevant_score": round(irrel_score, 3),
+            "top_match": top_desc,
+            "top_confidence": round(top_conf, 3),
+            "top_is_infrastructure": is_top_infra,
+            "threshold": threshold
+        }
+        
+        print(f"  [Relevance] infra={infra_score:.3f}, irrel={irrel_score:.3f}, "
+              f"top='{top_desc[:50]}' ({top_conf:.3f}), relevant={is_relevant}")
+        
+        return is_relevant, infra_score, details
+    
+    except Exception as e:
+        print(f"\u26a0 CLIP relevance check error: {e}")
+        return True, 1.0, {"message": f"Relevance check error: {str(e)}"}
+
+
 def combine_severity(text_severity, image_severity, image_sev_conf=0.0):
     """
     Combine text-based and image-based severity predictions.
-    Image severity is weighted higher since visual damage is more objective.
+    Always takes the HIGHER of text or image severity (safety-first approach).
     """
     sev_order = {"Low": 0, "Medium": 1, "High": 2, "Critical": 3}
     sev_from_idx = {0: "Low", 1: "Medium", 2: "High", 3: "Critical"}
@@ -518,15 +652,11 @@ def combine_severity(text_severity, image_severity, image_sev_conf=0.0):
     text_idx = sev_order.get(text_severity, 0)
     image_idx = sev_order.get(image_severity, 0) if image_severity else text_idx
     
-    if image_severity and image_sev_conf > 0.3:
-        # Image weight: 60%, Text weight: 40%
-        combined_idx = round(image_idx * 0.6 + text_idx * 0.4)
-        # Always take the HIGHER severity between text and image
-        combined_idx = max(combined_idx, text_idx, image_idx)
-    else:
-        combined_idx = text_idx
-    
+    # Safety-first: always take the HIGHER severity
+    combined_idx = max(text_idx, image_idx)
     combined_idx = min(combined_idx, 3)
+    
+    print(f"  [Combine Severity] text={text_severity}({text_idx}), image={image_severity}({image_idx}) → {sev_from_idx[combined_idx]}")
     return sev_from_idx[combined_idx]
 
 # =====================================================
@@ -552,15 +682,15 @@ def predict_complaint(data: PredictComplaintRequest):
         desc_words = description_text.split()
         
         # Reject too-short descriptions (single words or just department names)
-        vague_words = {"road", "roads", "water", "electricity", "electric", "power",
-                       "light", "pipe", "wire", "pole", "supply", "drainage",
-                       "pothole", "complaint", "problem", "issue", "help",
-                       "bad", "broken", "damage", "fix", "repair"}
+        # Only reject truly single-word or meaningless descriptions
+        # Pure department names by themselves are vague
+        pure_dept_words = {"road", "roads", "water", "electricity", "electric", "power",
+                           "light", "pipe", "wire", "pole", "drainage"}
         
-        # Filter out vague/generic words to see if there's real content
-        meaningful_words = [w for w in desc_words if w.lower() not in vague_words and len(w) > 1]
+        # If ALL words are just department names, it's too vague  
+        all_dept_only = all(w.lower() in pure_dept_words for w in desc_words)
         
-        if len(desc_words) < 3 or (len(desc_words) < 5 and len(meaningful_words) < 1):
+        if len(desc_words) < 2 or (len(desc_words) <= 2 and all_dept_only):
             return {
                 "predicted_department": None,
                 "predicted_severity": None,
@@ -688,6 +818,39 @@ def predict_complaint(data: PredictComplaintRequest):
         if pil_image and CLIP_AVAILABLE:
             clip_dept, clip_conf, clip_scores = clip_classify_image(pil_image)
             print(f"  CLIP Image → {clip_dept} ({clip_conf:.0%}) | {clip_scores}")
+        
+        # ==========================================
+        # STEP 2.5: IMAGE RELEVANCE CHECK (reject selfies, random photos)
+        # ==========================================
+        if pil_image and CLIP_RELEVANCE_AVAILABLE:
+            is_relevant, relevance_score, relevance_details = clip_check_image_relevance(pil_image)
+            
+            if not is_relevant:
+                return {
+                    "predicted_department": None,
+                    "predicted_severity": None,
+                    "rejected": True,
+                    "rejection_reason": (
+                        "The uploaded image does not appear to show an infrastructure issue. "
+                        "It looks like a selfie, portrait, or unrelated photo. "
+                        "Please upload or capture a clear photo of the actual problem "
+                        "(e.g., damaged road, water leakage, broken electric pole)."
+                    ),
+                    "sentiment": gpt2_text_result.get("sentiment") if gpt2_text_result else None,
+                    "method": "clip-image-relevance-filter",
+                    "has_image": True,
+                    "image_relevance": relevance_details,
+                    "analysis": {
+                        "department_analysis": "Rejected - image is not relevant to infrastructure",
+                        "severity_analysis": "N/A",
+                        "validity_analysis": (
+                            f"Image relevance score: {relevance_score:.1%}. "
+                            f"The image appears to be: '{relevance_details.get('top_match', 'unknown')}'. "
+                            "Please upload a photo showing the actual infrastructure issue."
+                        )
+                    }
+                }
+            print(f"  ✅ Image is relevant (score={relevance_score:.3f})")
         
         # ==========================================
         # STEP 3: No image provided → use GPT-2 text only
@@ -848,6 +1011,99 @@ def predict_complaint(data: PredictComplaintRequest):
                 "predicted_department": None,
                 "predicted_severity": None
             }
+
+
+# =====================================================
+# VERIFY RESOLVED IMAGE ENDPOINT
+# =====================================================
+class VerifyResolvedImageRequest(BaseModel):
+    image_data: str  # Base64 encoded resolved image
+    department: str  # Department of the complaint (Water, Electricity, Roads/Road)
+
+@app.post("/verify-resolved-image")
+def verify_resolved_image(data: VerifyResolvedImageRequest):
+    """
+    Verify that a resolved image:
+      1. Is a relevant infrastructure photo (not a selfie/random photo)
+      2. Matches the department of the complaint (e.g., road complaint → road image)
+    """
+    try:
+        # Decode image
+        b64_str = data.image_data
+        if "," in b64_str:
+            b64_str = b64_str.split(",")[1]
+        image_bytes = base64.b64decode(b64_str)
+        pil_image = Image.open(BytesIO(image_bytes)).convert("RGB")
+    except Exception as e:
+        return {
+            "valid": False,
+            "reason": f"Could not decode image: {str(e)}",
+            "relevance_check": False,
+            "department_check": False
+        }
+
+    # Step 1: Check image relevance (not a selfie/random photo)
+    if CLIP_RELEVANCE_AVAILABLE:
+        is_relevant, relevance_score, relevance_details = clip_check_image_relevance(pil_image, threshold=0.45)
+        if not is_relevant:
+            return {
+                "valid": False,
+                "reason": (
+                    "The uploaded image does not appear to show an infrastructure issue. "
+                    "It looks like a selfie, portrait, or unrelated photo. "
+                    "Please upload or capture a clear photo of the resolved issue at the complaint location."
+                ),
+                "relevance_check": False,
+                "department_check": False,
+                "relevance_score": round(relevance_score, 3),
+                "relevance_details": relevance_details
+            }
+    
+    # Step 2: Check if image matches complaint department using CLIP
+    if CLIP_AVAILABLE:
+        clip_dept, clip_conf, clip_scores = clip_classify_image(pil_image)
+        
+        # Normalize department names for comparison
+        complaint_dept = data.department.strip()
+        if complaint_dept == "Roads":
+            complaint_dept = "Road"
+        
+        dept_match = (clip_dept == complaint_dept)
+        
+        if not dept_match:
+            return {
+                "valid": False,
+                "reason": (
+                    f"The uploaded image appears to show a '{clip_dept}' issue, "
+                    f"but this complaint is for the '{data.department}' department. "
+                    f"Please upload a photo that matches the complaint category."
+                ),
+                "relevance_check": True,
+                "department_check": False,
+                "detected_department": clip_dept,
+                "expected_department": data.department,
+                "department_confidence": round(clip_conf, 3),
+                "all_scores": {k: round(v, 3) for k, v in clip_scores.items()}
+            }
+        
+        return {
+            "valid": True,
+            "reason": "Image is valid - shows relevant infrastructure matching the complaint department.",
+            "relevance_check": True,
+            "department_check": True,
+            "detected_department": clip_dept,
+            "expected_department": data.department,
+            "department_confidence": round(clip_conf, 3),
+            "all_scores": {k: round(v, 3) for k, v in clip_scores.items()}
+        }
+    
+    # If CLIP is not available, just pass
+    return {
+        "valid": True,
+        "reason": "Image validation models not available - accepted by default.",
+        "relevance_check": None,
+        "department_check": None
+    }
 
 
 if __name__ == "__main__":

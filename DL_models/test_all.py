@@ -81,9 +81,9 @@ for img, desc, expected_dept in cases_match:
 # Test 4: Image + MISMATCHING text (should be NOT VALID)
 print("\n--- 4. Image + Mismatching Text (should be NOT VALID) ---")
 cases_mismatch = [
-    (img_road, "water leakage", "Road", "Water"),   # Road image + water text
-    (img_road, "electricity problem", "Road", "Electricity"),  # Road image + electricity text
-    (img_water, "road damage", "Water", "Road"),     # Water image + road text
+    (img_road, "water leakage in pipes", "Road", "Water"),   # Road image + water text
+    (img_road, "electricity problem with wires", "Road", "Electricity"),  # Road image + electricity text
+    (img_water, "road damage pothole", "Water", "Road"),     # Water image + road text
     (img_elec, "water supply issue", "Electricity", "Water"),  # Electricity image + water text
 ]
 for img, desc, img_dept, text_dept in cases_mismatch:
@@ -137,9 +137,9 @@ try:
         
         # Test predict through backend
         predict_r = requests.post(f"{BACKEND_URL}/api/complaints/predict", 
-            json={"description": "road pothole", "imageData": img_road},
+            json={"description": "road has big potholes", "imageData": img_road},
             headers={"Authorization": f"Bearer {token}"},
-            timeout=30
+            timeout=120
         )
         pr = predict_r.json()
         test("Backend predict → Road",

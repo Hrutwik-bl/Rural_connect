@@ -14,6 +14,7 @@ exports.predictComplaint = async (req, res) => {
 	try {
 		const { description, imageData } = req.body;
 
+
 		if (!description || !imageData) {
 			return res.status(400).json({
 				message: 'Description and image are required for prediction'
@@ -26,6 +27,10 @@ exports.predictComplaint = async (req, res) => {
 			const mlResponse = await axios.post(`${mlApiUrl}/predict-complaint`, {
 				description,
 				image_data: imageData
+			}, {
+				timeout: 120000, // 2 minute timeout for CLIP processing
+				maxContentLength: 50 * 1024 * 1024,
+				maxBodyLength: 50 * 1024 * 1024
 			});
 
 			const mlData = mlResponse.data;
@@ -65,7 +70,13 @@ exports.predictComplaint = async (req, res) => {
 				analysis: mlData.analysis
 			});
 		} catch (mlError) {
-			console.error('ML API Error:', mlError.message);
+			console.error('ML API Error:', mlError.message || mlError);
+			if (mlError.response) {
+				console.error('ML API Response Status:', mlError.response.status);
+				console.error('ML API Response Data:', JSON.stringify(mlError.response.data).substring(0, 500));
+			} else if (mlError.code) {
+				console.error('ML API Error Code:', mlError.code);
+			}
 			return res.status(503).json({
 				message: 'AI service temporarily unavailable. Please try again later.',
 				error: mlError.message
@@ -328,14 +339,47 @@ exports.updateComplaintStatus = async (req, res) => {
 				});
 			}
 
-			// Require original complaint to have coordinates
+			// ===== STEP 1: Verify resolved image is relevant & matches department =====
+			const mlApiUrl = process.env.ML_API_URL || 'http://localhost:8003';
+
+			try {
+				const imageVerifyResponse = await axios.post(`${mlApiUrl}/verify-resolved-image`, {
+					image_data: resolvedImageData,
+					department: complaint.category || complaint.department
+				}, {
+					timeout: 60000,
+					maxContentLength: 50 * 1024 * 1024,
+					maxBodyLength: 50 * 1024 * 1024
+				});
+
+				console.log('Resolved image verification:', imageVerifyResponse.data);
+
+				if (!imageVerifyResponse.data.valid) {
+					return res.status(400).json({
+						message: imageVerifyResponse.data.reason,
+						imageVerification: {
+							valid: false,
+							relevance_check: imageVerifyResponse.data.relevance_check,
+							department_check: imageVerifyResponse.data.department_check,
+							detected_department: imageVerifyResponse.data.detected_department,
+							expected_department: imageVerifyResponse.data.expected_department
+						}
+					});
+				}
+			} catch (mlError) {
+				console.error('Resolved image verification API error:', mlError.message);
+				return res.status(503).json({
+					message: 'Image verification service is unavailable. Please try again later.',
+					verified: false
+				});
+			}
+
+			// ===== STEP 2: Verify location matches =====
 			if (!complaint.locationCoords || !complaint.locationCoords.lat || !complaint.locationCoords.lng) {
 				// If original complaint has no coordinates, allow resolution without verification
 				console.log('Original complaint has no location coordinates, skipping verification');
 			} else {
 				// Verify location using DL model
-				const mlApiUrl = process.env.ML_API_URL || 'http://localhost:8003';
-
 				try {
 					const verifyResponse = await axios.post(`${mlApiUrl}/verify-location`, {
 						complaint_lat: complaint.locationCoords.lat,

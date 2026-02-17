@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import apiClient from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 
@@ -13,6 +13,10 @@ const DepartmentDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [resolvedImage, setResolvedImage] = useState(null);
   const [resolvedImagePreview, setResolvedImagePreview] = useState(null);
+  const [showResolvedCamera, setShowResolvedCamera] = useState(false);
+  const resolvedVideoRef = useRef(null);
+  const resolvedStreamRef = useRef(null);
+  const [imageError, setImageError] = useState('');
 
   useEffect(() => {
     fetchComplaints();
@@ -29,9 +33,50 @@ const DepartmentDashboard = () => {
     }
   };
 
+  // Camera functions for resolved image
+  const startResolvedCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      resolvedStreamRef.current = stream;
+      setShowResolvedCamera(true);
+      setTimeout(() => {
+        if (resolvedVideoRef.current) {
+          resolvedVideoRef.current.srcObject = stream;
+        }
+      }, 100);
+    } catch (err) {
+      alert('Could not access camera. Please check permissions or use file upload.');
+    }
+  };
+
+  const captureResolvedPhoto = () => {
+    if (!resolvedVideoRef.current) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = resolvedVideoRef.current.videoWidth;
+    canvas.height = resolvedVideoRef.current.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(resolvedVideoRef.current, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    setResolvedImagePreview(dataUrl);
+    // Create a dummy file-like object so the existing base64 conversion works
+    setResolvedImage(null); // We'll use resolvedImagePreview directly
+    stopResolvedCamera();
+  };
+
+  const stopResolvedCamera = () => {
+    if (resolvedStreamRef.current) {
+      resolvedStreamRef.current.getTracks().forEach(t => t.stop());
+      resolvedStreamRef.current = null;
+    }
+    setShowResolvedCamera(false);
+  };
+
   const handleUpdateStatus = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setImageError('');
 
     try {
       let resolvedLocationCoords = null;
@@ -68,6 +113,16 @@ const DepartmentDashboard = () => {
           reader.readAsDataURL(resolvedImage);
         });
         resolvedImageType = resolvedImage.type;
+      } else if (resolvedImagePreview) {
+        // Camera-captured image is already a data URL
+        resolvedImageData = resolvedImagePreview;
+        resolvedImageType = 'image/jpeg';
+      }
+
+      if (status === 'Resolved' && !resolvedImageData) {
+        setImageError('Please upload or capture a photo of the resolved issue.');
+        setLoading(false);
+        return;
       }
 
       await apiClient.put(`/api/complaints/${selectedComplaint._id}/status`, {
@@ -83,10 +138,16 @@ const DepartmentDashboard = () => {
       setRemarks('');
       setResolvedImage(null);
       setResolvedImagePreview(null);
+      setImageError('');
+      stopResolvedCamera();
       fetchComplaints();
     } catch (error) {
       const message = error.response?.data?.message || error.message || 'Error updating complaint';
-      alert(message);
+      if (error.response?.data?.imageVerification) {
+        setImageError(message);
+      } else {
+        alert(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -113,6 +174,10 @@ const DepartmentDashboard = () => {
     setSelectedComplaint(complaint);
     setStatus(complaint.status);
     setRemarks(complaint.remarks || '');
+    setResolvedImage(null);
+    setResolvedImagePreview(null);
+    setImageError('');
+    stopResolvedCamera();
     setShowModal(true);
   };
 
@@ -335,7 +400,7 @@ const DepartmentDashboard = () => {
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-elevated border border-stone-200">
             <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center sticky top-0 bg-white rounded-t-2xl z-10">
               <h3 className="text-lg font-bold text-slate-800">Update Complaint</h3>
-              <button onClick={() => setShowModal(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-stone-100 text-slate-400 hover:text-slate-600 transition">
+              <button onClick={() => { stopResolvedCamera(); setImageError(''); setShowModal(false); }} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-stone-100 text-slate-400 hover:text-slate-600 transition">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -396,29 +461,91 @@ const DepartmentDashboard = () => {
                 {status === 'Resolved' && (
                   <div>
                     <label className="block text-slate-600 font-semibold mb-1.5 text-sm">Upload Resolved Image <span className="text-red-500">*</span></label>
-                    <p className="text-xs text-slate-400 mb-2">Please upload a photo showing the issue has been resolved</p>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      required
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          setResolvedImage(file);
-                          const reader = new FileReader();
-                          reader.onloadend = () => setResolvedImagePreview(reader.result);
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
-                    />
+                    
+                    {imageError && (
+                      <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl">
+                        <div className="flex items-start gap-2">
+                          <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+                          <p className="text-sm text-red-700 font-medium">{imageError}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-3 mb-3">
+                      <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-stone-300 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition text-sm text-slate-600">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        Choose File
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              setResolvedImage(file);
+                              setImageError('');
+                              const reader = new FileReader();
+                              reader.onloadend = () => setResolvedImagePreview(reader.result);
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={startResolvedCamera}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-stone-300 rounded-xl hover:border-emerald-400 hover:bg-emerald-50/50 transition text-sm text-slate-600"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        Take Photo
+                      </button>
+                    </div>
+
+                    {showResolvedCamera && (
+                      <div className="mb-3 rounded-xl overflow-hidden border-2 border-emerald-400">
+                        <video
+                          ref={resolvedVideoRef}
+                          autoPlay
+                          playsInline
+                          className="w-full rounded-t-xl"
+                        />
+                        <div className="flex gap-2 p-2 bg-stone-50">
+                          <button
+                            type="button"
+                            onClick={captureResolvedPhoto}
+                            className="flex-1 py-2 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition"
+                          >
+                            📸 Capture
+                          </button>
+                          <button
+                            type="button"
+                            onClick={stopResolvedCamera}
+                            className="px-4 py-2 bg-red-500 text-white rounded-lg font-semibold text-sm hover:bg-red-600 transition"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     {resolvedImagePreview && (
-                      <div className="mt-3">
+                      <div className="mt-3 relative inline-block">
                         <img
                           src={resolvedImagePreview}
                           alt="Resolved preview"
                           className="w-48 h-48 object-contain rounded-xl border-2 border-emerald-400"
                         />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setResolvedImage(null);
+                            setResolvedImagePreview(null);
+                            setImageError('');
+                          }}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
                       </div>
                     )}
                   </div>
@@ -434,7 +561,7 @@ const DepartmentDashboard = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowModal(false)}
+                    onClick={() => { stopResolvedCamera(); setImageError(''); setShowModal(false); }}
                     className="px-6 py-3 bg-stone-100 text-slate-600 rounded-xl hover:bg-stone-200 transition font-semibold text-sm"
                   >
                     Cancel

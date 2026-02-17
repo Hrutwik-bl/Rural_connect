@@ -25,13 +25,18 @@ DEPT_LABELS = {0: "Electricity", 1: "Road", 2: "Water"}
 SENTIMENT_LABELS = {0: "not_complaint", 1: "complaint"}
 
 
-def _fuzzy_match(word, keyword, max_distance=2):
+def _fuzzy_match(word, keyword, max_distance=None):
     """Check if word is a close match to keyword (handles typos like patholes→potholes)"""
+    # Substring match only for plurals/conjugations (length diff ≤ 3)
+    # e.g. pothole→potholes OK, crack→electrocution NOT OK
     if keyword in word or word in keyword:
-        return True
+        if abs(len(word) - len(keyword)) <= 3:
+            return True
+    if max_distance is None:
+        max_distance = 1 if max(len(word), len(keyword)) <= 5 else 2
     if abs(len(word) - len(keyword)) > max_distance:
         return False
-    if len(word) < 3 or len(keyword) < 3:
+    if len(word) < 4 or len(keyword) < 4:
         return False
     common = sum(1 for a, b in zip(word, keyword) if a == b)
     return common >= max(len(word), len(keyword)) - max_distance
