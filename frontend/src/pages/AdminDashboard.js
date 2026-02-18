@@ -734,9 +734,41 @@ const AdminDashboard = () => {
                       src={getImageSrc(selectedComplaint)} 
                       alt="Complaint" 
                       className="w-64 h-64 object-contain rounded-lg cursor-pointer hover:opacity-90 transition"
-                      onClick={() => window.open(getImageSrc(selectedComplaint), '_blank')}
+                      onClick={() => {
+                        const w = window.open('', '_blank');
+                        if (w) {
+                          w.document.write(`<html><head><title>Image Preview</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#1a1a1a;}</style></head><body><img src="${getImageSrc(selectedComplaint)}" style="max-width:100%;max-height:100vh;object-fit:contain;"/></body></html>`);
+                          w.document.close();
+                        }
+                      }}
                     />
                     <p className="text-xs text-slate-400 mt-2 text-center">Click image to view full size</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedComplaint.resolvedImageData && (
+                <div>
+                  <label className="block text-xs font-bold text-emerald-500 uppercase tracking-wider mb-2">Resolved Image (Uploaded by Department)</label>
+                  <div className="rounded-xl p-4 bg-emerald-50 border border-emerald-200">
+                    <img 
+                      src={selectedComplaint.resolvedImageData.startsWith('data:') 
+                        ? selectedComplaint.resolvedImageData 
+                        : `data:${selectedComplaint.resolvedImageType || 'image/jpeg'};base64,${selectedComplaint.resolvedImageData}`} 
+                      alt="Resolved" 
+                      className="w-64 h-64 object-contain rounded-lg cursor-pointer hover:opacity-90 transition border-2 border-emerald-400"
+                      onClick={() => {
+                        const src = selectedComplaint.resolvedImageData.startsWith('data:') 
+                          ? selectedComplaint.resolvedImageData 
+                          : `data:${selectedComplaint.resolvedImageType || 'image/jpeg'};base64,${selectedComplaint.resolvedImageData}`;
+                        const w = window.open('', '_blank');
+                        if (w) {
+                          w.document.write(`<html><head><title>Resolved Image</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#1a1a1a;}</style></head><body><img src="${src}" style="max-width:100%;max-height:100vh;object-fit:contain;"/></body></html>`);
+                          w.document.close();
+                        }
+                      }}
+                    />
+                    <p className="text-xs text-emerald-600 mt-2 text-center font-medium">Photo of resolved issue — Click to view full size</p>
                   </div>
                 </div>
               )}

@@ -452,7 +452,13 @@ const CitizenDashboard = () => {
                       src={getImageSrc(selectedComplaint)}
                       alt="Complaint"
                       className="w-64 h-64 object-contain rounded-xl cursor-pointer hover:opacity-90 transition"
-                      onClick={() => window.open(getImageSrc(selectedComplaint), '_blank')}
+                      onClick={() => {
+                        const w = window.open('', '_blank');
+                        if (w) {
+                          w.document.write(`<html><head><title>Image Preview</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#1a1a1a;}</style></head><body><img src="${getImageSrc(selectedComplaint)}" style="max-width:100%;max-height:100vh;object-fit:contain;"/></body></html>`);
+                          w.document.close();
+                        }
+                      }}
                     />
                     <p className="text-xs text-slate-400 mt-2 text-center">Click image to view full size</p>
                   </div>
@@ -503,20 +509,15 @@ const CitizenDashboard = () => {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-slate-600 font-semibold mb-1.5 text-sm">Department *</label>
-                      <select
-                        required
-                        value={formData.category}
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
-                      >
-                        <option value="Water">Water</option>
-                        <option value="Roads">Roads</option>
-                        <option value="Electricity">Electricity</option>
-                      </select>
-                      <p className="text-xs text-slate-400 mt-1">AI will suggest a department, but you can change it.</p>
-                    </div>
+                    {aiPredictions && (
+                      <div>
+                        <label className="block text-slate-600 font-semibold mb-1.5 text-sm">Department (AI Assigned)</label>
+                        <div className="w-full px-4 py-2.5 bg-emerald-50 border border-emerald-300 rounded-xl text-sm font-semibold text-emerald-700">
+                          {formData.category}
+                        </div>
+                        <p className="text-xs text-emerald-500 mt-1">Automatically assigned by AI analysis.</p>
+                      </div>
+                    )}
 
                     <div>
                       <label className="block text-slate-600 font-semibold mb-1.5 text-sm">Location *</label>

@@ -170,6 +170,14 @@ const DepartmentDashboard = () => {
     return `data:${type};base64,${complaint.imageData}`;
   };
 
+  const openImageInNewTab = (src) => {
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.write(`<html><head><title>Image Preview</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#1a1a1a;}</style></head><body><img src="${src}" style="max-width:100%;max-height:100vh;object-fit:contain;"/></body></html>`);
+      w.document.close();
+    }
+  };
+
   const openModal = (complaint) => {
     setSelectedComplaint(complaint);
     setStatus(complaint.status);
@@ -235,12 +243,12 @@ const DepartmentDashboard = () => {
         </div>
 
         <div className="bg-white rounded-2xl shadow-card p-6 border border-stone-200">
-          <h3 className="text-xl font-bold text-slate-800 mb-4">Complaints</h3>
+          <h3 className="text-xl font-bold text-slate-800 mb-4">Active Complaints</h3>
           
-          {complaints.length === 0 ? (
+          {complaints.filter(c => c.status !== 'Resolved').length === 0 ? (
             <div className="text-center py-12">
               <span className="text-4xl mb-3 block">📭</span>
-              <p className="text-slate-400">No complaints assigned yet.</p>
+              <p className="text-slate-400">No active complaints.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -255,7 +263,7 @@ const DepartmentDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100">
-                  {complaints.map(complaint => (
+                  {complaints.filter(c => c.status !== 'Resolved').map(complaint => (
                     <tr key={complaint._id} className="hover:bg-emerald-50/40 transition">
                       <td className="px-4 py-3 font-medium text-slate-700">{complaint.title}</td>
                       <td className="px-4 py-3 text-slate-600">{complaint.location}</td>
@@ -285,6 +293,65 @@ const DepartmentDashboard = () => {
                             Update
                           </button>
                         </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Resolved Complaints Section */}
+        <div className="bg-white rounded-2xl shadow-card p-6 border border-stone-200 mt-6">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">✅</span>
+            <h3 className="text-xl font-bold text-slate-800">Resolved Complaints</h3>
+            <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">
+              {complaints.filter(c => c.status === 'Resolved').length}
+            </span>
+          </div>
+          
+          {complaints.filter(c => c.status === 'Resolved').length === 0 ? (
+            <div className="text-center py-12">
+              <span className="text-4xl mb-3 block">📋</span>
+              <p className="text-slate-400">No resolved complaints yet.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-emerald-50">
+                    <th className="px-4 py-3 text-left text-xs font-bold text-emerald-600 uppercase tracking-wider">Title</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-emerald-600 uppercase tracking-wider">Location</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-emerald-600 uppercase tracking-wider">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-emerald-600 uppercase tracking-wider">Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-emerald-600 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {complaints.filter(c => c.status === 'Resolved').map(complaint => (
+                    <tr key={complaint._id} className="hover:bg-emerald-50/40 transition">
+                      <td className="px-4 py-3 font-medium text-slate-700">{complaint.title}</td>
+                      <td className="px-4 py-3 text-slate-600">{complaint.location}</td>
+                      <td className="px-4 py-3">
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                          ✅ Resolved
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-slate-500">
+                        {new Date(complaint.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => {
+                            setSelectedComplaint(complaint);
+                            setShowViewModal(true);
+                          }}
+                          className="px-3 py-1.5 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition text-sm font-medium"
+                        >
+                          View
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -355,7 +422,7 @@ const DepartmentDashboard = () => {
                       src={getImageSrc(selectedComplaint)} 
                       alt="Complaint" 
                       className="w-64 h-64 object-contain rounded-lg cursor-pointer hover:opacity-90 transition"
-                      onClick={() => window.open(getImageSrc(selectedComplaint), '_blank')}
+                      onClick={() => openImageInNewTab(getImageSrc(selectedComplaint))}
                     />
                     <p className="text-xs text-slate-400 mt-2 text-center">Click image to view full size</p>
                   </div>
@@ -372,9 +439,9 @@ const DepartmentDashboard = () => {
                         : `data:${selectedComplaint.resolvedImageType || 'image/jpeg'};base64,${selectedComplaint.resolvedImageData}`} 
                       alt="Resolved" 
                       className="w-64 h-64 object-contain rounded-lg cursor-pointer hover:opacity-90 transition border-2 border-emerald-400"
-                      onClick={() => window.open(selectedComplaint.resolvedImageData.startsWith('data:') 
+                      onClick={() => openImageInNewTab(selectedComplaint.resolvedImageData.startsWith('data:') 
                         ? selectedComplaint.resolvedImageData 
-                        : `data:${selectedComplaint.resolvedImageType || 'image/jpeg'};base64,${selectedComplaint.resolvedImageData}`, '_blank')}
+                        : `data:${selectedComplaint.resolvedImageType || 'image/jpeg'};base64,${selectedComplaint.resolvedImageData}`)}
                     />
                     <p className="text-xs text-emerald-600 mt-2 text-center font-medium">Photo of resolved issue</p>
                   </div>
@@ -424,7 +491,7 @@ const DepartmentDashboard = () => {
                         src={getImageSrc(selectedComplaint)} 
                         alt="Complaint" 
                         className="w-64 h-64 object-contain rounded-xl border border-stone-200 cursor-pointer hover:border-emerald-400 transition"
-                        onClick={() => window.open(getImageSrc(selectedComplaint), '_blank')}
+                        onClick={() => openImageInNewTab(getImageSrc(selectedComplaint))}
                       />
                     </div>
                   )}
