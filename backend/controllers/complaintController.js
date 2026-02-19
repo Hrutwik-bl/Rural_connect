@@ -376,8 +376,10 @@ exports.updateComplaintStatus = async (req, res) => {
 
 			// ===== STEP 2: Verify location matches =====
 			if (!complaint.locationCoords || !complaint.locationCoords.lat || !complaint.locationCoords.lng) {
-				// If original complaint has no coordinates, allow resolution without verification
-				console.log('Original complaint has no location coordinates, skipping verification');
+				return res.status(400).json({
+					message: 'The location of the complaint raised by the citizen does not match the resolved image location. GPS coordinates are missing from the original complaint.',
+					verified: false
+				});
 			} else {
 				// Verify location using DL model
 				try {
@@ -398,7 +400,7 @@ exports.updateComplaintStatus = async (req, res) => {
 					// REJECT resolution if location doesn't match - DO NOT allow resolved status
 					if (!verifyResponse.data.resolved) {
 						return res.status(400).json({
-							message: `Location verification failed. You are ${Math.round(verifyResponse.data.distance_meters)}m away from the complaint location. Please go to the actual location to resolve this complaint.`,
+							message: `The location of the complaint raised by the citizen does not match the resolved image location. You are ${Math.round(verifyResponse.data.distance_meters)}m away from the complaint location.`,
 							distance: verifyResponse.data.distance_meters,
 							verificationScore: verifyResponse.data.resolved_probability,
 							verified: false

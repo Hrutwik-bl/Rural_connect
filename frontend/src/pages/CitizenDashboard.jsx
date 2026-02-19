@@ -28,6 +28,7 @@ const CitizenDashboard = () => {
     description: '',
     category: 'Water',
     location: '',
+    locationCoords: null,
     imageData: null,
     imageType: null
   });
@@ -41,6 +42,7 @@ const CitizenDashboard = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
+          const coords = { lat: latitude, lng: longitude };
 
           try {
             const response = await fetch(
@@ -51,19 +53,25 @@ const CitizenDashboard = () => {
               data.address?.county || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
             setFormData(prev => ({
               ...prev,
-              location: address
+              location: address,
+              locationCoords: coords
             }));
           } catch (err) {
             setFormData(prev => ({
               ...prev,
-              location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+              location: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+              locationCoords: coords
             }));
           }
         },
         (geoError) => {
           console.log('Geolocation error:', geoError);
-        }
+          showToast('Could not get GPS location. Location verification requires GPS.', 'error');
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
+    } else {
+      showToast('Geolocation is not supported by this browser.', 'error');
     }
   };
 
@@ -196,12 +204,19 @@ const CitizenDashboard = () => {
     setLoading(true);
 
     try {
+      if (!formData.locationCoords) {
+        showToast('GPS location is required. Please enable location services and try again.', 'error');
+        setLoading(false);
+        return;
+      }
+
       const submitData = {
         title: formData.title,
         description: formData.description,
         category: formData.category,
         department: formData.category,
         location: formData.location,
+        locationCoords: formData.locationCoords,
         imageData: formData.imageData,
         imageType: formData.imageType
       };
@@ -214,6 +229,7 @@ const CitizenDashboard = () => {
         description: '',
         category: 'Water',
         location: '',
+        locationCoords: null,
         imageData: null,
         imageType: null
       });
@@ -464,6 +480,91 @@ const CitizenDashboard = () => {
                   </div>
                 </div>
               )}
+
+              {/* Resolved Image */}
+              {selectedComplaint.resolvedImageData && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Resolved Image</label>
+                  <div className="rounded-xl p-4 bg-emerald-50 border border-emerald-200">
+                    <img
+                      src={selectedComplaint.resolvedImageData.startsWith('data:') 
+                        ? selectedComplaint.resolvedImageData 
+                        : `data:${selectedComplaint.resolvedImageType || 'image/jpeg'};base64,${selectedComplaint.resolvedImageData}`}
+                      alt="Resolved"
+                      className="w-64 h-64 object-contain rounded-xl cursor-pointer hover:opacity-90 transition border-2 border-emerald-400"
+                      onClick={() => {
+                        const src = selectedComplaint.resolvedImageData.startsWith('data:') 
+                          ? selectedComplaint.resolvedImageData 
+                          : `data:${selectedComplaint.resolvedImageType || 'image/jpeg'};base64,${selectedComplaint.resolvedImageData}`;
+                        const w = window.open('', '_blank');
+                        if (w) {
+                          w.document.write(`<html><head><title>Resolved Image</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#1a1a1a;}</style></head><body><img src="${src}" style="max-width:100%;max-height:100vh;object-fit:contain;"/></body></html>`);
+                          w.document.close();
+                        }
+                      }}
+                    />
+                    <p className="text-xs text-emerald-600 mt-2 text-center font-medium">Photo of resolved issue</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Location Verification Results */}
+              {selectedComplaint.status === 'Resolved' && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Location Verification</label>
+                  {selectedComplaint.locationVerificationScore != null ? (
+                    <div className={`rounded-xl p-4 border-2 ${
+                      selectedComplaint.locationVerificationScore > 0.5 
+                        ? 'bg-emerald-50 border-emerald-300' 
+                        : 'bg-red-50 border-red-300'
+                    }`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        {selectedComplaint.locationVerificationScore > 0.5 ? (
+                          <svg className="w-6 h-6 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                        ) : (
+                          <svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+                        )}
+                        <span className={`text-lg font-bold ${
+                          selectedComplaint.locationVerificationScore > 0.5 ? 'text-emerald-700' : 'text-red-700'
+                        }`}>
+                          {selectedComplaint.locationVerificationScore > 0.5 ? 'Location Verified' : 'Location Mismatch'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        <div className="bg-white/70 rounded-lg p-2.5">
+                          <p className="text-xs text-slate-500 font-semibold">Distance</p>
+                          <p className="text-sm font-bold text-slate-800">
+                            {selectedComplaint.locationVerificationDistance != null 
+                              ? `${Math.round(selectedComplaint.locationVerificationDistance)} meters`
+                              : 'N/A'}
+                          </p>
+                        </div>
+                        <div className="bg-white/70 rounded-lg p-2.5">
+                          <p className="text-xs text-slate-500 font-semibold">Verification Score</p>
+                          <p className="text-sm font-bold text-slate-800">
+                            {(selectedComplaint.locationVerificationScore * 100).toFixed(1)}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl p-4 bg-amber-50 border border-amber-200">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                        <span className="text-sm font-semibold text-amber-700">Location verification data not available</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Remarks */}
+              {selectedComplaint.remarks && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Remarks</label>
+                  <p className="text-slate-700 bg-emerald-50 p-4 rounded-xl text-sm leading-relaxed border-l-4 border-emerald-500">{selectedComplaint.remarks}</p>
+                </div>
+              )}
             </div>
 
             <div className="px-6 py-4 border-t border-stone-100 flex justify-end">
@@ -529,6 +630,17 @@ const CitizenDashboard = () => {
                         className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-sm"
                         placeholder="Enter location"
                       />
+                      {formData.locationCoords ? (
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                          <span className="text-xs text-emerald-600 font-medium">GPS coordinates captured ({formData.locationCoords.lat.toFixed(4)}, {formData.locationCoords.lng.toFixed(4)})</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                          <span className="text-xs text-amber-600 font-medium">GPS required — enable location services</span>
+                        </div>
+                      )}
                     </div>
 
                     <div>

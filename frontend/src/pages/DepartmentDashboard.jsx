@@ -17,6 +17,7 @@ const DepartmentDashboard = () => {
   const resolvedVideoRef = useRef(null);
   const resolvedStreamRef = useRef(null);
   const [imageError, setImageError] = useState('');
+  const [updateError, setUpdateError] = useState('');
 
   useEffect(() => {
     fetchComplaints();
@@ -139,6 +140,7 @@ const DepartmentDashboard = () => {
       setResolvedImage(null);
       setResolvedImagePreview(null);
       setImageError('');
+      setUpdateError('');
       stopResolvedCamera();
       fetchComplaints();
     } catch (error) {
@@ -146,7 +148,7 @@ const DepartmentDashboard = () => {
       if (error.response?.data?.imageVerification) {
         setImageError(message);
       } else {
-        alert(message);
+        setUpdateError(message);
       }
     } finally {
       setLoading(false);
@@ -185,6 +187,7 @@ const DepartmentDashboard = () => {
     setResolvedImage(null);
     setResolvedImagePreview(null);
     setImageError('');
+    setUpdateError('');
     stopResolvedCamera();
     setShowModal(true);
   };
@@ -447,6 +450,56 @@ const DepartmentDashboard = () => {
                   </div>
                 </div>
               )}
+
+              {/* Location Verification Results */}
+              {selectedComplaint.status === 'Resolved' && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Location Verification</label>
+                  {selectedComplaint.locationVerificationScore != null ? (
+                    <div className={`rounded-xl p-4 border-2 ${
+                      selectedComplaint.locationVerificationScore > 0.5 
+                        ? 'bg-emerald-50 border-emerald-300' 
+                        : 'bg-red-50 border-red-300'
+                    }`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        {selectedComplaint.locationVerificationScore > 0.5 ? (
+                          <svg className="w-6 h-6 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                        ) : (
+                          <svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+                        )}
+                        <span className={`text-lg font-bold ${
+                          selectedComplaint.locationVerificationScore > 0.5 ? 'text-emerald-700' : 'text-red-700'
+                        }`}>
+                          {selectedComplaint.locationVerificationScore > 0.5 ? 'Location Verified' : 'Location Mismatch'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        <div className="bg-white/70 rounded-lg p-2.5">
+                          <p className="text-xs text-slate-500 font-semibold">Distance</p>
+                          <p className="text-sm font-bold text-slate-800">
+                            {selectedComplaint.locationVerificationDistance != null 
+                              ? `${Math.round(selectedComplaint.locationVerificationDistance)} meters`
+                              : 'N/A'}
+                          </p>
+                        </div>
+                        <div className="bg-white/70 rounded-lg p-2.5">
+                          <p className="text-xs text-slate-500 font-semibold">Verification Score</p>
+                          <p className="text-sm font-bold text-slate-800">
+                            {(selectedComplaint.locationVerificationScore * 100).toFixed(1)}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl p-4 bg-amber-50 border border-amber-200">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                        <span className="text-sm font-semibold text-amber-700">Location verification data not available</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="px-6 py-4 border-t border-stone-100 flex justify-end">
@@ -467,7 +520,7 @@ const DepartmentDashboard = () => {
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-elevated border border-stone-200">
             <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center sticky top-0 bg-white rounded-t-2xl z-10">
               <h3 className="text-lg font-bold text-slate-800">Update Complaint</h3>
-              <button onClick={() => { stopResolvedCamera(); setImageError(''); setShowModal(false); }} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-stone-100 text-slate-400 hover:text-slate-600 transition">
+              <button onClick={() => { stopResolvedCamera(); setImageError(''); setUpdateError(''); setShowModal(false); }} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-stone-100 text-slate-400 hover:text-slate-600 transition">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -499,6 +552,21 @@ const DepartmentDashboard = () => {
               </div>
 
               <form onSubmit={handleUpdateStatus} className="space-y-4">
+                {updateError && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <div className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-red-700">Update Failed</p>
+                        <p className="text-sm text-red-600 mt-1">{updateError}</p>
+                      </div>
+                      <button type="button" onClick={() => setUpdateError('')} className="text-red-400 hover:text-red-600">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-slate-600 font-semibold mb-1.5 text-sm">Status</label>
                   <select
@@ -628,7 +696,7 @@ const DepartmentDashboard = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => { stopResolvedCamera(); setImageError(''); setShowModal(false); }}
+                    onClick={() => { stopResolvedCamera(); setImageError(''); setUpdateError(''); setShowModal(false); }}
                     className="px-6 py-3 bg-stone-100 text-slate-600 rounded-xl hover:bg-stone-200 transition font-semibold text-sm"
                   >
                     Cancel
