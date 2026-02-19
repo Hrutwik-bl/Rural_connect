@@ -18,6 +18,8 @@ const AdminDashboard = () => {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
+  const [deptFilter, setDeptFilter] = useState('all');
+  const [collapsedDepts, setCollapsedDepts] = useState({});
 
   useEffect(() => {
     fetchComplaints();
@@ -223,6 +225,9 @@ const AdminDashboard = () => {
           </button>
           <button onClick={() => setActiveTab('complaints')} className={tabClass('complaints')}>
             All Complaints
+          </button>
+          <button onClick={() => setActiveTab('deptwise')} className={tabClass('deptwise')}>
+            Department Wise
           </button>
           <button onClick={() => setActiveTab('approvals')} className={tabClass('approvals')}>
             Pending Approvals {pendingApprovals.length > 0 && <span className="ml-2 inline-block px-2 py-0.5 bg-red-500 text-white text-xs rounded-full font-bold">{pendingApprovals.length}</span>}
@@ -451,6 +456,157 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {activeTab === 'deptwise' && (() => {
+        const deptColors = {
+          'Water': { bg: 'bg-sky-50', border: 'border-sky-200', header: 'bg-sky-100', text: 'text-sky-700', icon: '💧', accent: 'bg-sky-600' },
+          'Electricity': { bg: 'bg-amber-50', border: 'border-amber-200', header: 'bg-amber-100', text: 'text-amber-700', icon: '⚡', accent: 'bg-amber-500' },
+          'Roads': { bg: 'bg-emerald-50', border: 'border-emerald-200', header: 'bg-emerald-100', text: 'text-emerald-700', icon: '🛣️', accent: 'bg-emerald-600' }
+        };
+        const departments = [...new Set(complaints.map(c => c.category))].sort();
+        const filteredDepts = deptFilter === 'all' ? departments : departments.filter(d => d === deptFilter);
+        const toggleDept = (dept) => setCollapsedDepts(prev => ({ ...prev, [dept]: !prev[dept] }));
+
+        return (
+          <div>
+            {/* Department Filter Buttons */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {departments.map(dept => {
+                const count = complaints.filter(c => c.category === dept).length;
+                const colors = deptColors[dept] || { text: 'text-slate-700', icon: '📋' };
+                return (
+                  <button
+                    key={dept}
+                    onClick={() => setDeptFilter(deptFilter === dept ? 'all' : dept)}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                      deptFilter === dept
+                        ? `${colors.accent || 'bg-slate-800'} text-white shadow-md`
+                        : 'bg-white text-slate-600 border border-stone-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    {colors.icon} {dept} ({count})
+                  </button>
+                );
+              })}
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
+                {error}
+              </div>
+            )}
+
+            {complaints.length === 0 ? (
+              <div className="text-center py-8 bg-white rounded-2xl shadow-card border border-stone-200">
+                <span className="text-3xl block mb-2">📭</span>
+                <p className="text-slate-400">No complaints found</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredDepts.map(dept => {
+                  const deptComplaints = complaints.filter(c => c.category === dept);
+                  const colors = deptColors[dept] || { bg: 'bg-stone-50', border: 'border-stone-200', header: 'bg-stone-100', text: 'text-stone-700', icon: '📋' };
+                  const isCollapsed = collapsedDepts[dept];
+                  const statusCounts = {
+                    pending: deptComplaints.filter(c => c.status === 'Pending').length,
+                    inProgress: deptComplaints.filter(c => c.status === 'In Progress').length,
+                    resolved: deptComplaints.filter(c => c.status === 'Resolved').length,
+                    escalated: deptComplaints.filter(c => c.escalated).length
+                  };
+
+                  return (
+                    <div key={dept} className={`rounded-2xl shadow-card border ${colors.border} overflow-hidden`}>
+                      {/* Department Header */}
+                      <div
+                        className={`${colors.header} px-6 py-4 flex items-center justify-between cursor-pointer select-none hover:brightness-95 transition`}
+                        onClick={() => toggleDept(dept)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{colors.icon}</span>
+                          <div>
+                            <h5 className={`text-base font-bold ${colors.text}`}>{dept} Department</h5>
+                            <div className="flex gap-3 mt-1">
+                              <span className="text-xs text-slate-500">Total: <b>{deptComplaints.length}</b></span>
+                              <span className="text-xs text-amber-600">Pending: <b>{statusCounts.pending}</b></span>
+                              <span className="text-xs text-sky-600">In Progress: <b>{statusCounts.inProgress}</b></span>
+                              <span className="text-xs text-emerald-600">Resolved: <b>{statusCounts.resolved}</b></span>
+                              {statusCounts.escalated > 0 && <span className="text-xs text-red-600">Escalated: <b>{statusCounts.escalated}</b></span>}
+                            </div>
+                          </div>
+                        </div>
+                        <span className={`text-lg ${colors.text} transition-transform ${isCollapsed ? '' : 'rotate-180'}`}>▼</span>
+                      </div>
+
+                      {/* Department Complaints Table */}
+                      {!isCollapsed && (
+                        <div className="bg-white p-4">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="bg-slate-50">
+                                  <th className="text-left py-3 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">ID</th>
+                                  <th className="text-left py-3 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Title</th>
+                                  <th className="text-left py-3 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Citizen</th>
+                                  <th className="text-left py-3 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Priority</th>
+                                  <th className="text-left py-3 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                                  <th className="text-left py-3 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
+                                  <th className="text-left py-3 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-stone-100">
+                                {deptComplaints.map((complaint) => (
+                                  <tr key={complaint._id} className="hover:bg-emerald-50/40 transition">
+                                    <td className="py-2.5 px-3 text-slate-500 font-mono text-xs">{complaint._id.slice(-6)}</td>
+                                    <td className="py-2.5 px-3 font-medium text-slate-700">{complaint.title}</td>
+                                    <td className="py-2.5 px-3 text-slate-600">{complaint.citizen?.name || 'Unknown'}</td>
+                                    <td className="py-2.5 px-3">
+                                      <span className={`priority-${(complaint.priority || 'low').toLowerCase()}`}>
+                                        {complaint.priority || 'Low'}
+                                      </span>
+                                    </td>
+                                    <td className="py-2.5 px-3">{getStatusBadge(complaint.status)}</td>
+                                    <td className="py-2.5 px-3 text-slate-500">{new Date(complaint.createdAt).toLocaleDateString()}</td>
+                                    <td className="py-2.5 px-3">
+                                      <div className="flex gap-1">
+                                        <button 
+                                          onClick={() => viewComplaintDetails(complaint)}
+                                          className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 text-xs font-medium transition"
+                                        >
+                                          View
+                                        </button>
+                                        {!complaint.escalated && (
+                                          <button 
+                                            onClick={() => handleEscalate(complaint._id)}
+                                            disabled={loading}
+                                            className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 text-xs font-medium disabled:opacity-40 transition"
+                                          >
+                                            Escalate
+                                          </button>
+                                        )}
+                                        <button 
+                                          onClick={() => handleDelete(complaint._id)}
+                                          disabled={loading}
+                                          className="px-2.5 py-1 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 text-xs font-medium disabled:opacity-40 transition"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {activeTab === 'approvals' && (
         <div className="bg-white rounded-2xl shadow-card border border-stone-200">
